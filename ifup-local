@@ -1,0 +1,29 @@
+#!/bin/bash
+
+cd /etc/sysconfig/network-scripts
+. ./network-functions
+
+[ -f ../network ] && . ../network
+
+unset REALDEVICE
+if [ "$1" = --realdevice ] ; then
+    REALDEVICE=$2
+    shift 2
+fi
+
+CONFIG=$1
+need_config "${CONFIG}"
+source_config
+
+[ -z "$REALDEVICE" ] && REALDEVICE=$DEVICE
+
+RTABLE=${REALDEVICE#eth}
+let RTABLE+=10000
+
+if [ -f ipt-${REALDEVICE} ]
+then
+  iptables -t mangle -A PREROUTING -i ${REALDEVICE} -j MARK --set-xmark 0x${RTABLE}/0xffffffff 
+  iptables -t mangle -A PREROUTING -i ${REALDEVICE} -j CONNMARK --save-mark --nfmask 0xffffffff --ctmask 0xffffffff
+  sysctl -w net.ipv4.conf.${REALDEVICE}.rp_filter=2 > /dev/null
+  ( until [ "$(ip route show dev docker0 2>/dev/null)" != "" ]; do sleep 1; done; ipr="$(ip route show dev docker0)";ip route add ${ipr% linkdown } dev docker0 table ${RTABLE} ) &
+fi

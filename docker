@@ -83,6 +83,8 @@ start() {
           echo
           exit 1
         fi
+        /sbin/modprobe nf_conntrack
+        /sbin/iptables -t mangle -A PREROUTING -i docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j CONNMARK --restore-mark --nfmask 0xffffffff --ctmask 0xffffffff
         success
         echo
     else
@@ -95,6 +97,7 @@ start() {
 
 stop() {
     echo -n $"Stopping $prog: "
+    /sbin/iptables -t mangle -D PREROUTING -i docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j CONNMARK --restore-mark --nfmask 0xffffffff --ctmask 0xffffffff
     killproc -p $pidfile -d 300 $prog
     retval=$?
     echo

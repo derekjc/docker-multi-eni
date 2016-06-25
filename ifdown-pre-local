@@ -1,0 +1,23 @@
+#!/bin/bash
+
+cd /etc/sysconfig/network-scripts
+. ./network-functions
+
+[ -f ../network ] && . ../network
+
+unset REALDEVICE
+if [ "$1" = --realdevice ] ; then
+    REALDEVICE=$2
+    shift 2
+fi
+
+CONFIG=$1
+need_config "${CONFIG}"
+source_config
+
+[ -z "$REALDEVICE" ] && REALDEVICE=$DEVICE
+
+RTABLE=${REALDEVICE#eth}
+let RTABLE+=10000
+ipr=$(ip route show dev docker0)
+(ip route del ${ipr% linkdown } dev docker0 table ${RTABLE}) || true
