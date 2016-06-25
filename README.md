@@ -1,9 +1,11 @@
 # docker-multi-eni
 
-# Assumptions
+## Assumptions
 - You are running Amazon Linux
 - You have docker installed
 - You have 2 ENIs and what to host 1 docker container behind each ENI.
+
+## How to use these files
 
 * Copy docker to /etc/init.d
 * Copy the remaining files to /etc/sysconfig/network-scripts. This will overwrite ec2net-functions.
