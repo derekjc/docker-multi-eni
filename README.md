@@ -7,7 +7,7 @@
 
 ## How to use these files
 
-* Copy docker to /etc/init.d
+* Copy docker to /etc/rc.d/init.d
 * Copy the remaining files to /etc/sysconfig/network-scripts. This will overwrite ec2net-functions.
 * Create the required symlinks:
 ```    
